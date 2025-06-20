@@ -12,6 +12,7 @@ import {
 import { Langfuse, ChatPromptClient } from "langfuse";
 import { extractVariables } from "./utils.js";
 import { z } from "zod";
+import { setupHttpServer } from "./http-server.js";
 
 // Requires Environment Variables
 const langfuse = new Langfuse();
@@ -217,9 +218,21 @@ server.tool(
 );
 
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Langfuse Prompts MCP Server running on stdio");
+  // 解析命令行參數
+  const args = process.argv.slice(2);
+  const transportMode = args.find(arg => arg.startsWith('--transport='))?.split('=')[1] || 'stdio';
+  const portArg = args.find(arg => arg.startsWith('--port='))?.split('=')[1];
+  const port = portArg ? parseInt(portArg, 10) : 3000;
+
+  if (transportMode === 'http') {
+    // 使用 HTTP 傳輸模式
+    await setupHttpServer(server, port);
+  } else {
+    // 預設使用 stdio 傳輸模式
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("Langfuse Prompts MCP Server running on stdio");
+  }
 }
 
 main().catch((error) => {
