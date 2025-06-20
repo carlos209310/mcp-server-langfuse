@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import type { InitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { Server } from 'http';
 import os from 'os';
 import cors from 'cors';
@@ -33,11 +33,11 @@ export async function setupHttpServer(server: McpServer, port: number = 3000): P
     if (sessionId && transports[sessionId]) {
       // 重用現有的傳輸
       transport = transports[sessionId];
-    } else if (!sessionId && isInitializeRequest(req.body)) {
+    } else if (!sessionId && req.body && req.body.method === 'initialize') {
       // 新的初始化請求
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (newSessionId) => {
+        onsessioninitialized: (newSessionId: string) => {
           // 按會話 ID 存儲傳輸
           transports[newSessionId] = transport;
         }
