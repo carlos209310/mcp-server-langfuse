@@ -9,8 +9,9 @@
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-    "start": "node -r dotenv/config build/index.js",
-    "start:http": "node -r dotenv/config build/index.js --transport=http"
+    "gcp-build": "npm run build",
+    "start": "node -r dotenv/config build/index.js --transport=http",
+    "start:stdio": "node -r dotenv/config build/index.js"
   },
   "files": [
     "build"
